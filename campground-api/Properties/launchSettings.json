@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:2476",
+      "sslPort": 44304
+    }
+  },
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5203",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VaultUri": "https://campgroundapivault.vault.azure.net/",
+        "AZURE_USERNAME": "leonardo.olaechea@unmsm.edu.pe",
+        "AZURE_CLIENT_ID": "91c050e1-2522-47e2-8c53-a98b58bc7b4d",
+        "AZURE_CLIENT_SECRET": " ",
+        "AZURE_TENANT_ID": " "
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:7205;http://localhost:5203",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VaultUri": "https://campgroundapivault.vault.azure.net/",
+        "AZURE_USERNAME": "leonardo.olaechea@unmsm.edu.pe"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VaultUri": "https://campgroundapivault.vault.azure.net/",
+        "AZURE_USERNAME": "leonardo.olaechea@unmsm.edu.pe"
+      }
+    }
+  }
+}
