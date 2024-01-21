@@ -9,10 +9,10 @@ env:
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: campground-api
-  DbContext: ${{ secrets..DBCONTEXT }}
-  Storage: ${{ secrets..STORAGE }}
-  JwtKey: ${{ secrets..JWTKEY }}
-  Frontend: ${{ secrets..FRONTEND }}
+  DbContext: ${{ secrets.DBCONTEXT }}
+  Storage: ${{ secrets.STORAGE }}
+  JwtKey: ${{ secrets.JWTKEY }}
+  Frontend: ${{ secrets.FRONTEND }}
 jobs:
   build:
     runs-on: ubuntu-latest
