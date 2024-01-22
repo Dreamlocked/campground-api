@@ -91,6 +91,38 @@ namespace campground_api.Services
             return null;
         }
 
+        public async Task<User?> GetUserGoogle(UserGoogleDto userGoogle)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == $"google{userGoogle.FirstName}");
+
+            if(user != null && user.Hash == Encript.GetSHA256Hash(userGoogle.Email + user.Salt)) return user;
+
+            return null;
+        }
+
+        public async Task<User> CreateUserGoogle(UserGoogleDto userGoogle)
+        {
+            if(await _context.Users.AnyAsync(u => u.Username == $"google{userGoogle.FirstName}"))
+            {
+                throw new Exception("Username already exists");
+            }
+
+            var user = new User()
+            {
+                Username = $"google{userGoogle.FirstName}",
+                Email = userGoogle.Email,
+                FirstName = userGoogle.FirstName,
+                LastName = userGoogle.LastName,
+                Salt = Encript.GenerateSalt(),
+            };
+
+            user.Hash = Encript.GetSHA256Hash(userGoogle.Email + user.Salt);
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
         private bool UserExists(int id) =>
             _context.Users.Any(e => e.Id == id);
     }

@@ -72,7 +72,7 @@ namespace campground_api.IOC
 
             builder.Services.AddAzureClients(azureBuilder =>
             {
-                azureBuilder.AddBlobServiceClient(builder.Configuration.GetConnectionString(Environment.GetEnvironmentVariable("Storage") ?? builder.Configuration.GetConnectionString("Storage")!));
+                azureBuilder.AddBlobServiceClient(Environment.GetEnvironmentVariable("Storage") ?? builder.Configuration.GetConnectionString("Storage")!);
             });
 
             builder.Services.AddScoped<CampgroundService>();
