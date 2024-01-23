@@ -45,6 +45,7 @@ namespace campground_api.Controllers
             });
         }
 
+        [AllowAnonymous]
         [HttpPost("signin")]
         public async Task<IActionResult> SignIn(SignInDto newUser)
         {
@@ -60,7 +61,7 @@ namespace campground_api.Controllers
         }
 
         [HttpPost("signout")]
-        public IActionResult SignOut()
+        public IActionResult SignOutUser()
         {
             Response.Cookies.Delete(_configuration["Jwt:CookieName"]!);
             return Ok();
@@ -68,7 +69,7 @@ namespace campground_api.Controllers
 
         [AllowAnonymous]
         [HttpPost("signin-google")]
-        public async Task<IActionResult> Authenticate(string idToken)
+        public async Task<IActionResult> SignInGoogle(string idToken)
         {
             try
             {
@@ -129,7 +130,7 @@ namespace campground_api.Controllers
             return tokenHandler.WriteToken(token);
         }
 
-        private CookieOptions GenerateCookieOptions()
+        private static CookieOptions GenerateCookieOptions()
         {
             return new CookieOptions
             {

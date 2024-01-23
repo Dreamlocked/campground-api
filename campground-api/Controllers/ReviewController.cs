@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using campground_api.Models;
 using campground_api.Services;
 using campground_api.Models.Dto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace campground_api.Controllers
 {
@@ -18,6 +19,7 @@ namespace campground_api.Controllers
         private readonly ReviewService _reviewService = reviewService;
 
         [HttpGet("/api/campground/{id}/reviews")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<ReviewListDto>>> GetReviews(int id)
         {
             return await _reviewService.GetByCampgroundId(id);

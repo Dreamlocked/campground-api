@@ -28,6 +28,7 @@ namespace campground_api.Controllers
 
         [HttpGet]
         [Route("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<CampgroundGetDto>> GetCampground(int id)
         {
             var campground = await _campgroundService.Get(id);
