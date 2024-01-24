@@ -50,7 +50,7 @@ namespace campground_api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCampground(int id, CampgroundCreateDto campground)
+        public async Task<IActionResult> PutCampground(int id, [FromForm] CampgroundCreateDto campground)
         {
             var updatedCampground = await _campgroundService.Update(id, campground);
             if(updatedCampground == null)

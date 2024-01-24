@@ -3,12 +3,15 @@ using campground_api.Models.Dto;
 using campground_api.Services;
 using campground_api.Utils;
 using Google.Apis.Auth;
+using Google.Apis.Oauth2.v2;
+using Google.Apis.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ms_correo.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -101,43 +104,40 @@ namespace campground_api.Controllers
 
         [AllowAnonymous]
         [HttpPost("signin-google")]
-        public async Task<IActionResult> SignInGoogle(string idToken)
+        public async Task<IActionResult> SignInGoogle(string accessToken)
         {
             try
             {
-                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+                var googleInitializer = new BaseClientService.Initializer();
+
+                googleInitializer.ApiKey = Environment.GetEnvironmentVariable("GoogleSecret") ?? _configuration["Google:Secret"];
+
+                var service = new Oauth2Service(googleInitializer);
+
+                Oauth2Service.TokeninfoRequest request = service.Tokeninfo();
+
+                request.AccessToken = accessToken; // access token received from frontend
+
+                var httpClient = new HttpClient();
+
+                var requestUri = $"https://www.googleapis.com/oauth2/v1/userinfo?access_token={accessToken}";
+
+                var response = await httpClient.GetAsync(requestUri);
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                dynamic userInfo = JsonConvert.DeserializeObject(content)!;
 
                 var userGoogle = new UserGoogleDto()
                 {
-                    Email = payload.Email,
-                    FirstName = payload.GivenName,
-                    LastName = payload.FamilyName,
-                    UserId = payload.Subject
+                    Email = userInfo.email,
+                    FirstName = userInfo.given_name,
+                    LastName = userInfo.family_name
                 };
 
                 var user = await _userService.GetUserGoogle(userGoogle);
 
                 if(user is null) user = await _userService.CreateUserGoogle(userGoogle);
-
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new[]
-    {
-                            new Claim("id", user.Id.ToString()),
-                            new Claim(JwtRegisteredClaimNames.Name, user.Username),
-                            new Claim(JwtRegisteredClaimNames.Email, user.Email)
-                        }),
-                    Expires = DateTime.UtcNow.AddDays(1),
-                    Issuer = _configuration["Jwt:Issuer"],
-                    Audience = _configuration["Jwt:Audience"],
-                    SigningCredentials = new SigningCredentials(
-                                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JwtKey") ?? _configuration["Jwt:Key"]!)),
-                                            SecurityAlgorithms.HmacSha256Signature)
-                };
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var jwtToken = tokenHandler.WriteToken(token);
 
                 var cookieOptions = new CookieOptions
                 {
@@ -146,7 +146,7 @@ namespace campground_api.Controllers
                     SameSite = SameSiteMode.None, // Evita que la cookie se envíe en solicitudes a otros sitios
                     Expires = DateTime.UtcNow.AddDays(1) // Establece la fecha de expiración de la cookie
                 };
-                Response.Cookies.Append(_configuration["Jwt:CookieName"]!, jwtToken, cookieOptions);
+                Response.Cookies.Append(_configuration["Jwt:CookieName"]!, accessToken, cookieOptions);
 
                 return Ok(new UserDto()
                 {
@@ -154,6 +154,7 @@ namespace campground_api.Controllers
                     Username = user.Username,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    Email = user.Email,
                 });
             }
             catch(Exception)

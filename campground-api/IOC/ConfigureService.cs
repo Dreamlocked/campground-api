@@ -2,9 +2,11 @@
 using campground_api.Models;
 using campground_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
@@ -21,7 +23,7 @@ namespace campground_api.IOC
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(o =>
+            }).AddJwtBearer("Custom",o =>
             {
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -42,8 +44,27 @@ namespace campground_api.IOC
                         return Task.CompletedTask;
                     }
                 };
+            }).AddJwtBearer("Google",options =>
+            {
+                options.Authority = "https://accounts.google.com";
+                options.Audience = Environment.GetEnvironmentVariable("GoogleClientId") ?? builder.Configuration["Google:ClientId"];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = "accounts.google.com",
+                    ValidateAudience = true,
+                    ValidAudience = Environment.GetEnvironmentVariable("GoogleClientId") ?? builder.Configuration["Google:ClientId"],
+                    ValidateLifetime = true
+                };
             });
-            builder.Services.AddAuthorization();
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .AddAuthenticationSchemes("Google", "Custom")
+                    .Build();
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(option =>
@@ -77,7 +98,6 @@ namespace campground_api.IOC
             });
 
             builder.Services.AddScoped<MessageSenderService>();
-            builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<CampgroundService>();
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<ReviewService>();
