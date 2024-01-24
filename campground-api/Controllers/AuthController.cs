@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ms_correo.Models;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,32 +18,41 @@ namespace campground_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IConfiguration configuration, UserService userService) : ControllerBase
+    public class AuthController(IConfiguration configuration, UserService userService, TokenService tokenService, MessageSenderService messageSenderService) : ControllerBase
     {
         // Escribe todo authcontroller
         private readonly IConfiguration _configuration = configuration;
         private readonly UserService _userService = userService;
+        private readonly MessageSenderService _messageSenderService = messageSenderService;
+        private readonly TokenService _tokenService = tokenService;
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> Auth(LoginDto userDto)
+        public async Task<IActionResult> Login(LoginDto userDto)
         {
-            var user = await _userService.GetUserLogin(userDto);
-
-            if(user == null) return Unauthorized();
-
-            var jwtToken = GenerateJwtToken(user);
-
-            var cookieOptions = GenerateCookieOptions();
-            Response.Cookies.Append(_configuration["Jwt:CookieName"]!, jwtToken, cookieOptions);
-
-            return Ok(new UserDto()
+            try
             {
-                Id = user.Id,
-                Username = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-            });
+                var user = await _userService.GetUserLogin(userDto);
+
+                if(user == null) return Unauthorized();
+
+                var jwtToken = _tokenService.GenerateJwtToken(user);
+
+                var cookieOptions = _tokenService.GenerateCookieOptions();
+                Response.Cookies.Append(_configuration["Jwt:CookieName"]!, jwtToken, cookieOptions);
+
+                return Ok(new UserDto()
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                });
+            }
+            catch(Exception)
+            {
+                return BadRequest("Error");
+            }
         }
 
         [AllowAnonymous]
@@ -52,6 +62,12 @@ namespace campground_api.Controllers
             try
             {
                 var user = await _userService.Create(newUser);
+                await _messageSenderService.SendMessage<Email>(new Email()
+                {
+                    Recipients = new[] { user.Email },
+                    Subject = "Bienvenido a Campground",
+                    Body = $"Hola {user.FirstName} {user.LastName}, bienvenido a Campground. Ya puedes empezar a disfrutar de nuestros servicios."
+                });
                 return Ok(user);
             }
             catch(Exception)
@@ -87,9 +103,9 @@ namespace campground_api.Controllers
 
                 if(user is null) user = await _userService.CreateUserGoogle(userGoogle);
 
-                var jwtToken = GenerateJwtToken(user);
+                var jwtToken = _tokenService.GenerateJwtToken(user);
 
-                var cookieOptions = GenerateCookieOptions();
+                var cookieOptions = _tokenService.GenerateCookieOptions();
                 Response.Cookies.Append(_configuration["Jwt:CookieName"]!, jwtToken, cookieOptions);
 
                 return Ok(new UserDto()
@@ -105,41 +121,5 @@ namespace campground_api.Controllers
                 return Unauthorized();
             }
         }
-
-        private string GenerateJwtToken(User user)
-        {
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                            new Claim("id", user.Id.ToString()),
-                            new Claim(JwtRegisteredClaimNames.Name, user.Username),
-                            new Claim(JwtRegisteredClaimNames.Email, user.Email)
-                        }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                Issuer = _configuration["Jwt:Issuer"],
-                Audience = _configuration["Jwt:Audience"],
-                SigningCredentials = new SigningCredentials(
-                                       new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
-                                                          SecurityAlgorithms.HmacSha256Signature
-                                                                         )
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-
-        private static CookieOptions GenerateCookieOptions()
-        {
-            return new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddDays(1)
-            };
-        }
-
     }
 }

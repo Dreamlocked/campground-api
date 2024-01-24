@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
+using System.Configuration;
 using System.Text;
 
 namespace campground_api.IOC
@@ -75,6 +76,8 @@ namespace campground_api.IOC
                 azureBuilder.AddBlobServiceClient(Environment.GetEnvironmentVariable("Storage") ?? builder.Configuration.GetConnectionString("Storage")!);
             });
 
+            builder.Services.AddScoped<MessageSenderService>();
+            builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<CampgroundService>();
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<ReviewService>();
