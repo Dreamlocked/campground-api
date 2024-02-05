@@ -43,10 +43,9 @@ namespace campground_api.Services
            
         public async Task<CampgroundGetDto?> Create(int userId, CampgroundCreateDto campgroundDto)
         {
-            Campground? newCampground = null;
             try
             {
-                newCampground = new Campground()
+                Campground newCampground = new Campground()
                 {
                     HostId = userId,
                     Title = campgroundDto.Title,
@@ -73,23 +72,27 @@ namespace campground_api.Services
 
         }
 
-        public async Task<Campground?> Delete(int id)
+        public async Task<Campground?> Delete(int userId, int id)
         {
-            var campground = await _context.Campgrounds.FindAsync(id);
-            if(campground == null)
-            {
-                return null;
-            }
+            var campground = await _context.Campgrounds.FindAsync(id) ?? throw new Exception("No existe el campground");
+
+            if(campground.HostId != userId) throw new Exception("El usuario no tiene autorizacion sobre el campgorund");
+
+            if(campground.Bookings.Count > 0) throw new Exception("El campground tiene reservas asociadas");
+
+            await DeleteAllFromCampground(campground.Id);
 
             _context.Campgrounds.Remove(campground);
+
             await _context.SaveChangesAsync();
 
             return campground;
         }
 
-        public async Task<CampgroundGetDto?> Update(int id, CampgroundCreateDto campgroundDto)
+        public async Task<CampgroundGetDto?> Update(int id, CampgroundUpdateDto campgroundDto)
         {
             var campground = await _context.Campgrounds.FindAsync(id);
+
             if(campground == null) return null;
 
             campground.HostId = campground.HostId;
@@ -102,13 +105,17 @@ namespace campground_api.Services
 
             await _context.SaveChangesAsync();
 
-            var imagesToDelete = await _context.Images.Where(image => image.CampgroundId == campground.Id).ToListAsync();
+            // determinar las imagenes que se eliminarán
+            var imagesToDelete = campground.Images.Where(image => !campgroundDto.actualImages.Contains(image.Id)).ToList();
+
+            imagesToDelete.ForEach(async image => await DeleteImageFromCampground(campground.Id, image.Filename));
 
             _context.Images.RemoveRange(imagesToDelete);
 
-            await UploadImageCampground(campground.Id, campgroundDto.Images);
+            if(campgroundDto.Images is not null) await UploadImageCampground(campground.Id, campgroundDto.Images);
 
             await _context.SaveChangesAsync();
+
             return await this.Get(campground.Id);
         }
 
@@ -126,7 +133,7 @@ namespace campground_api.Services
 
                 var fileName = $"{Guid.NewGuid()}{fileExtension}";
 
-                var contentType = GetContentType(fileExtension);
+                var contentType = GetContentType(fileExtension!);
 
                 var blobUploadOptions = new BlobUploadOptions
                 {
@@ -158,6 +165,22 @@ namespace campground_api.Services
             return newImages;
         }
 
+        public async Task DeleteImageFromCampground(int campgroundId, string imageId)
+        {
+            var containerCampground = _blobServiceClient.GetBlobContainerClient($"camp0{campgroundId}");
+
+            var blobClient = containerCampground.GetBlobClient(imageId);
+
+            await blobClient.DeleteIfExistsAsync();
+        }
+
+        public async Task DeleteAllFromCampground(int campgroundId)
+        {
+            var containerCampground = _blobServiceClient.GetBlobContainerClient($"camp0{campgroundId}");
+
+            await containerCampground.DeleteIfExistsAsync();
+        }
+
         private string GetContentType(string fileExtension)
         {
             // Aquí puedes agregar más tipos de contenido según sea necesario
@@ -168,5 +191,6 @@ namespace campground_api.Services
                 _ => "application/octet-stream"
             };
         }
+
     }
 }

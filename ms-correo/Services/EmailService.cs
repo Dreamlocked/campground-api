@@ -1,38 +1,38 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Amqp.Framing;
+using MimeKit;
+using MimeKit.Text;
+using MailKit.Net.Smtp;
 using ms_correo.Models;
 using System.Net;
-using System.Net.Mail;
+using MailKit.Security;
+
 
 namespace ms_correo.Services
 {
-    public class EmailService
+    public class EmailService(IConfiguration configuration)
     {
-        public static void SendEmail(Email email)
+        private readonly IConfiguration _configuration = configuration;
+        public void SendEmail(Email request)
         {
             try
             {
-                Console.WriteLine(email);
-/*                using(SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587))
-                {
-                    smtpClient.Credentials = new NetworkCredential("sender@example.com", "password");
-                    smtpClient.EnableSsl = true;
+                var email = new MimeMessage();
+                email.From.Add(MailboxAddress.Parse(_configuration["Email:User"]));
+                request.Recipients.ForEach(mail => email.To.Add(MailboxAddress.Parse(mail)));
+                email.Subject = request.Subject;
+                email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = request.Body };
 
-                    MailMessage mailMessage = new()
-                    {
-                        From = new MailAddress("sender@example.com")
-                    };
-                    foreach(string recipient in email.Recipients)
-                    {
-                        mailMessage.To.Add(recipient);
-                    }
-                    mailMessage.Subject = email.Subject;
-                    mailMessage.Body = email.Body;
-                    smtpClient.Send(mailMessage);
-                }*/
+                using var smtp = new SmtpClient();
+                smtp.Connect(_configuration["Email:Host"],587,SecureSocketOptions.StartTls);
+                smtp.Authenticate(_configuration["Email:User"], _configuration["Email:Password"]);
+
+                smtp.Send(email);
+                smtp.Disconnect(true);
             }
             catch(Exception)
             {
-                throw;
+                Console.WriteLine("No pudo enviarse el correo");
             }
         }
     }

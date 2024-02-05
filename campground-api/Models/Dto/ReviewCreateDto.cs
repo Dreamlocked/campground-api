@@ -2,8 +2,8 @@
 {
     public class ReviewCreateDto
     {
-        public int BookingsId { get; set; }
-        public string Body { get; set; } = "";
-        public short Rating { get; set; }
+        public required int BookingsId { get; set; }
+        public required string Body { get; set; }
+        public required short Rating { get; set; }
     }
 }

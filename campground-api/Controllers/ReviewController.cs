@@ -29,7 +29,7 @@ namespace campground_api.Controllers
         public async Task<ActionResult<ReviewCreateDto>> PostReview(ReviewCreateDto reviewDto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
-            var newReview = await _reviewService.Create(int.Parse(userId), reviewDto);
+            var newReview = await _reviewService.Create(int.Parse(userId!), reviewDto);
             return Ok(newReview);
         }
 

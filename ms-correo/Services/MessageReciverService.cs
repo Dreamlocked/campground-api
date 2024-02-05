@@ -10,10 +10,12 @@ namespace ms_correo.Services
         private readonly IConfiguration _configuration;
         private readonly ServiceBusClient _client;
         private readonly ServiceBusProcessor _processor;
+        private readonly EmailService _emailService;
 
-        public MessageReceiverService(IConfiguration configuration)
+        public MessageReceiverService(IConfiguration configuration, EmailService emailService)
         {
             _configuration = configuration;
+            _emailService = emailService;
             _client = new ServiceBusClient(Environment.GetEnvironmentVariable("AzureServiceBus") ?? _configuration!.GetConnectionString("AzureServiceBus"), new ServiceBusClientOptions()
             {
                 TransportType = ServiceBusTransportType.AmqpWebSockets
@@ -36,7 +38,7 @@ namespace ms_correo.Services
             // Aquí puedes agregar la lógica para ejecutar una acción cuando recibes un mensaje
             var email = JsonSerializer.Deserialize<Email>(messageBody)!;
 
-            EmailService.SendEmail(email);
+            _emailService.SendEmail(email);
 
             // Completa el mensaje
             await args.CompleteMessageAsync(args.Message);

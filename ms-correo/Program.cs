@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<MessageReceiverService>();
+builder.Services.AddSingleton<EmailService>();
 
 var app = builder.Build();
 

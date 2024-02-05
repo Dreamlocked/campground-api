@@ -1,11 +1,13 @@
 ﻿
 using campground_api.Models;
 using campground_api.Services;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -23,7 +25,7 @@ namespace campground_api.IOC
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer("Custom",o =>
+            }).AddJwtBearer("Custom", o =>
             {
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -44,25 +46,13 @@ namespace campground_api.IOC
                         return Task.CompletedTask;
                     }
                 };
-            }).AddJwtBearer("Google",options =>
-            {
-                options.Authority = "https://accounts.google.com";
-                options.Audience = Environment.GetEnvironmentVariable("GoogleClientId") ?? builder.Configuration["Google:ClientId"];
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = "accounts.google.com",
-                    ValidateAudience = true,
-                    ValidAudience = Environment.GetEnvironmentVariable("GoogleClientId") ?? builder.Configuration["Google:ClientId"],
-                    ValidateLifetime = true
-                };
             });
 
             builder.Services.AddAuthorization(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
-                    .AddAuthenticationSchemes("Google", "Custom")
+                    .AddAuthenticationSchemes("Custom")
                     .Build();
             });
 
@@ -81,7 +71,7 @@ namespace campground_api.IOC
                 options.AddPolicy("AllowSpecificOrigins",
                     builder =>
                     {
-                        builder.WithOrigins(Environment.GetEnvironmentVariable("Frontend") ?? "http://localhost")
+                        builder.WithOrigins(Environment.GetEnvironmentVariable("Frontend") ?? "https://localhost")
                             .AllowAnyHeader()
                             .AllowCredentials()
                             .AllowAnyMethod();
@@ -97,10 +87,14 @@ namespace campground_api.IOC
                 azureBuilder.AddBlobServiceClient(Environment.GetEnvironmentVariable("Storage") ?? builder.Configuration.GetConnectionString("Storage")!);
             });
 
+            builder.Services.AddSignalR();
+
             builder.Services.AddScoped<MessageSenderService>();
             builder.Services.AddScoped<CampgroundService>();
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<ReviewService>();
+            builder.Services.AddScoped<BookingService>();
+            builder.Services.AddScoped<NotificationService>();
 
             builder.Services.Configure<RouteOptions>(options =>
             {

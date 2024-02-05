@@ -2,7 +2,7 @@
 {
     public class Email
     {
-        public string[] Recipients { get; set; } = null!;
+        public List<String> Recipients { get; set; } = null!;
         public string Subject { get; set; } = null!;
         public string Body { get; set; } = null!;
     }

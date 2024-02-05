@@ -22,4 +22,6 @@ public partial class User
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     public virtual ICollection<Campground> Campgrounds { get; set; } = new List<Campground>();
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

@@ -19,6 +19,8 @@ public partial class Booking
 
     public int NumNights { get; set; }
 
+    public DateTime? CreateAt { get; set; }
+
     public virtual Campground Campground { get; set; } = null!;
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

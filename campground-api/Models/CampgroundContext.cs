@@ -21,6 +21,8 @@ public partial class CampgroundContext : DbContext
 
     public virtual DbSet<Image> Images { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<Province> Provinces { get; set; }
 
     public virtual DbSet<Region> Regions { get; set; }
@@ -29,7 +31,8 @@ public partial class CampgroundContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer();
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        => optionsBuilder.UseSqlServer();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,6 +45,9 @@ public partial class CampgroundContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ArrivingDate).HasColumnName("arriving_date");
             entity.Property(e => e.CampgroundId).HasColumnName("campground_id");
+            entity.Property(e => e.CreateAt)
+                .HasColumnType("datetime")
+                .HasColumnName("create_at");
             entity.Property(e => e.LeavingDate).HasColumnName("leaving_date");
             entity.Property(e => e.NumNights).HasColumnName("num_nights");
             entity.Property(e => e.PricePerNight)
@@ -110,8 +116,33 @@ public partial class CampgroundContext : DbContext
 
             entity.HasOne(d => d.Campground).WithMany(p => p.Images)
                 .HasForeignKey(d => d.CampgroundId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__images__campgrou__02C769E9");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__notifica__3213E83F7D1D93FB");
+
+            entity.ToTable("notifications");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CreateAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("create_at");
+            entity.Property(e => e.Message)
+                .IsUnicode(false)
+                .HasColumnName("message");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Viewed)
+                .HasDefaultValue(false)
+                .HasColumnName("viewed");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__notificat__user___2EA5EC27");
         });
 
         modelBuilder.Entity<Province>(entity =>

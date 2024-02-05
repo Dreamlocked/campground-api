@@ -9,6 +9,8 @@ using campground_api.Models;
 using campground_api.Services;
 using campground_api.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
+using campground_api.Utils;
+using Microsoft.AspNetCore.SignalR;
 
 namespace campground_api.Controllers
 {
@@ -45,18 +47,16 @@ namespace campground_api.Controllers
         public async Task<ActionResult<CampgroundGetDto>> PostCampground([FromForm] CampgroundCreateDto campground)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
-            var newCampground = await _campgroundService.Create(int.Parse(userId), campground);
+            var newCampground = await _campgroundService.Create(int.Parse(userId!), campground);
             return Ok(newCampground);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCampground(int id, [FromForm] CampgroundCreateDto campground)
+        public async Task<IActionResult> PutCampground(int id, [FromForm] CampgroundUpdateDto campground)
         {
             var updatedCampground = await _campgroundService.Update(id, campground);
-            if(updatedCampground == null)
-            {
-                return NotFound();
-            }
+
+            if(updatedCampground == null) return NotFound();
 
             return NoContent();
         }
@@ -64,10 +64,14 @@ namespace campground_api.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Campground>> DeleteCampground(int id)
         {
-            var campground = await _campgroundService.Delete(id);
-            if (campground == null)
+            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "id")!.Value);
+            try
             {
-                return NotFound();
+                var campground = await _campgroundService.Delete(userId, id);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
             return Ok();

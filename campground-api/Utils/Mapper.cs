@@ -93,5 +93,69 @@ namespace campground_api.Utils
 
             return reviewListDto;
         }
+
+        public static BookingGetDto MapBookingToBookingGet(Booking booking)
+        {
+            var bookingGetDto = new BookingGetDto()
+            {
+                Id = booking.Id,
+                Campground = new CampgroundGetDto()
+                {
+                    Id = booking.Campground.Id,
+                    Title = booking.Campground.Title,
+                    Description = booking.Campground.Description,
+                    Latitude = booking.Campground.Latitude,
+                    Longitude = booking.Campground.Longitude,
+                    Location = booking.Campground.Location,
+                    Price = booking.Campground.Price,
+                    Images = booking.Campground.Images.Select(image => new ImageDto()
+                    {
+                        Filename = image.Filename,
+                        Url = image.Url
+                    }).ToList(),
+                    Host = new UserDto()
+                    {
+                        Id = booking.Campground.Host.Id,
+                        Username = booking.Campground.Host.Username,
+                        Email = booking.Campground.Host.Email,
+                        FirstName = booking.Campground.Host.FirstName,
+                        LastName = booking.Campground.Host.LastName
+                    }
+                },
+                Tenant = new UserDto()
+                {
+                    Id = booking.User.Id,
+                    Username = booking.User.Username,
+                    Email = booking.User.Email,
+                    FirstName = booking.User.FirstName,
+                    LastName = booking.User.LastName
+                },
+                ArrivingDate = booking.ArrivingDate,
+                LeavingDate = booking.LeavingDate,
+                NumNights = booking.NumNights,
+                Total = booking.PricePerNight * booking.NumNights,
+                Reviews = booking.Reviews.Select(review => new ReviewListDto()
+                {
+                    Id = review.Id,
+                    Body = review.Body,
+                    Rating = review.Rating,
+                }).ToList()
+            };
+            return bookingGetDto;
+        }
+
+        public static NotificationGetDto MapNotificationToNotificationGet(Notification notification)
+        {
+            var notificationGetDto = new NotificationGetDto()
+            {
+                Id= notification.Id,
+                UserId = notification.UserId,
+                CreateAt = notification.CreateAt,
+                Message = notification.Message,
+                Viewed = notification.Viewed,
+                BookingId = notification.BookingId
+            };
+            return notificationGetDto;
+        }
     }
 }
