@@ -1,0 +1,6 @@
+@Campground.Services.Campgrounds.Api.Write_HostAddress = http://localhost:5171
+
+GET {{Campground.Services.Campgrounds.Api.Write_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

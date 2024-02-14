@@ -1,0 +1,6 @@
+@Campground.Services.Billings_HostAddress = http://localhost:5202
+
+GET {{Campground.Services.Billings_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

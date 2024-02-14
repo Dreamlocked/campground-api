@@ -1,0 +1,6 @@
+@Campground.Services.Authentications_HostAddress = http://localhost:5033
+
+GET {{Campground.Services.Authentications_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

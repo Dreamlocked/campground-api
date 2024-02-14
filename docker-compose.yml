@@ -1,0 +1,66 @@
+version: '3.4'
+
+networks:
+  backend:
+
+volumes:
+  dbdata:
+
+services:
+  sql_server:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - 1433:1433
+    environment:
+      SA_PASSWORD: "admin123$"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - dbdata:/var/lib/sqlserver
+    networks:
+      - backend
+
+  campground.api:
+    container_name: campground.api-gateway
+    image: ${DOCKER_REGISTRY-}campgroundapi
+    build:
+      context: .
+      dockerfile: Campground.API/Dockerfile
+    ports:
+      - 8081:8081   
+    networks:
+      - backend
+
+  campground.services.campgrounds.api.read:
+    container_name: campground.services.campgrounds.api.read
+    image: ${DOCKER_REGISTRY-}campgroundservicescampgroundsapiread
+    build:
+      context: .
+      dockerfile: Campground.Services.Campgrounds.Api.Read/Dockerfile
+    networks:
+      - backend
+  campground.services.campgrounds.api.write:
+    container_name: campground.services.campgrounds.api.write
+    image: ${DOCKER_REGISTRY-}campgroundservicescampgroundsapiwrite
+    build:
+      context: .
+      dockerfile: Campground.Services.Campgrounds.Api.Write/Dockerfile
+    networks:
+      - backend
+
+  campground.services.emails:
+    container_name: campground.services.emails
+    image: ${DOCKER_REGISTRY-}campgroundservicesemails
+    build:
+      context: .
+      dockerfile: Campground.Services.Emails/Dockerfile
+    networks:
+      - backend
+
+  campground.services.authentications:
+    container_name: campground.services.authentications
+    image: ${DOCKER_REGISTRY-}campgroundservicesauthentications
+    build:
+      context: .
+      dockerfile: Campground.Services.Authentications/Dockerfile
+    networks:
+      - backend
