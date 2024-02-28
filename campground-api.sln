@@ -15,6 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ms-correo", "ms-correo\ms-c
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{0B54DB7B-8899-4930-A67B-F3A16DA55A43}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ms-billing", "ms-billing\ms-billing.csproj", "{66EED948-8C0F-4AB4-9CB0-438B78E1C526}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{9C22DDFE-0351-4DB6-8A9C-F654AB6DD3B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campground.Shared.Communication.AzureServiceBus", "Campground.Shared.Communication.AzureServiceBus\Campground.Shared.Communication.AzureServiceBus.csproj", "{1A03F92F-3778-49A4-ABFB-6B5DB330FE8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,12 +35,22 @@ Global
 		{084C25D8-BD3F-4BC3-9709-25E49968AE3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{084C25D8-BD3F-4BC3-9709-25E49968AE3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{084C25D8-BD3F-4BC3-9709-25E49968AE3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66EED948-8C0F-4AB4-9CB0-438B78E1C526}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66EED948-8C0F-4AB4-9CB0-438B78E1C526}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66EED948-8C0F-4AB4-9CB0-438B78E1C526}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66EED948-8C0F-4AB4-9CB0-438B78E1C526}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A03F92F-3778-49A4-ABFB-6B5DB330FE8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A03F92F-3778-49A4-ABFB-6B5DB330FE8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A03F92F-3778-49A4-ABFB-6B5DB330FE8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A03F92F-3778-49A4-ABFB-6B5DB330FE8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{084C25D8-BD3F-4BC3-9709-25E49968AE3F} = {0B54DB7B-8899-4930-A67B-F3A16DA55A43}
+		{66EED948-8C0F-4AB4-9CB0-438B78E1C526} = {0B54DB7B-8899-4930-A67B-F3A16DA55A43}
+		{1A03F92F-3778-49A4-ABFB-6B5DB330FE8D} = {9C22DDFE-0351-4DB6-8A9C-F654AB6DD3B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F5525183-4330-4EAA-A911-67920F767EF2}

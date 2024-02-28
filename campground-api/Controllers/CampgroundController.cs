@@ -46,7 +46,7 @@ namespace campground_api.Controllers
         [HttpPost]
         public async Task<ActionResult<CampgroundGetDto>> PostCampground([FromForm] CampgroundCreateDto campground)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value; 
             var newCampground = await _campgroundService.Create(int.Parse(userId!), campground);
             return Ok(newCampground);
         }

@@ -7,7 +7,7 @@ namespace campground_api.Utils
         public override async Task OnConnectedAsync()
         {
 
-            await Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId} has joined");
+            await Clients.All.SendAsync("notification", $"{Context.ConnectionId} has joined");
         }
     }
 }

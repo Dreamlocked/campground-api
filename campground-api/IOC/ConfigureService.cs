@@ -71,7 +71,7 @@ namespace campground_api.IOC
                 options.AddPolicy("AllowSpecificOrigins",
                     builder =>
                     {
-                        builder.WithOrigins(Environment.GetEnvironmentVariable("Frontend") ?? "https://localhost")
+                        builder.WithOrigins("https://campgrounds-frontend.vercel.app")
                             .AllowAnyHeader()
                             .AllowCredentials()
                             .AllowAnyMethod();
@@ -88,6 +88,7 @@ namespace campground_api.IOC
             });
 
             builder.Services.AddSignalR();
+            builder.Services.AddHealthChecks();
 
             builder.Services.AddScoped<MessageSenderService>();
             builder.Services.AddScoped<CampgroundService>();

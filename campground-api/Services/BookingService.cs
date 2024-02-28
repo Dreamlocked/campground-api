@@ -13,10 +13,27 @@ namespace campground_api.Services
     {
         private readonly CampgroundContext _context = context;
 
+        public async Task<List<BookingGetDto>> GetAll(int userId)
+        {
+            var bookings = await _context.Bookings
+                .Include(x => x.User)
+                .Include(x => x.Campground)
+                .ThenInclude(c => c.Images)
+                .Include(x => x.Campground)
+                .ThenInclude(c => c.Host)
+                .Include(x => x.Reviews)
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+
+            return bookings.Select(Mapper.MapBookingToBookingGet).ToList();
+        }
+
         public async Task<BookingGetDto?> Get(int id)
         {
             var booking = await _context.Bookings
                 .Include(x => x.User)
+                .Include(x => x.Campground)
+                .ThenInclude(c => c.Images)
                 .Include(x => x.Campground)
                 .ThenInclude(c => c.Host)
                 .Include(x => x.Reviews)

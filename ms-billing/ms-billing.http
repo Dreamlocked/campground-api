@@ -1,0 +1,6 @@
+@ms_billing_HostAddress = http://localhost:5259
+
+GET {{ms_billing_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

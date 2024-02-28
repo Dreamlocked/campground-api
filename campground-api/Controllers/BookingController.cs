@@ -18,6 +18,17 @@ namespace campground_api.Controllers
         private readonly NotificationService _notificationService = notificationService;
         private readonly IHubContext<MessageHub> _hubContext = hubContext;
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAll()
+        {
+            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "id")!.Value);
+
+            var bookings = await _bookingService.GetAll(userId);
+
+            return Ok(bookings);
+        }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IActionResult> Get(int id)
@@ -44,7 +55,7 @@ namespace campground_api.Controllers
                 var newNotification = await _notificationService.CreateNotification(userId, newBooking.Campground.Id);
 
                 await _hubContext.Clients.All.SendAsync("notification", JsonConvert.SerializeObject(newNotification));
-                await _hubContext.Clients.User(Convert.ToString(newBooking.Campground.Host!.Id)).SendAsync("notification", newNotification);
+                await _hubContext.Clients.User(Convert.ToString(newBooking.Campground.Host!.Id)).SendAsync("notification", JsonConvert.SerializeObject(newNotification));
 
                 return Ok(newBooking);
             }

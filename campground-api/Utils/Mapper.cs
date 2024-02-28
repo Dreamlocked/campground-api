@@ -18,6 +18,7 @@ namespace campground_api.Utils
                 Price = campground.Price,
                 Images = campground.Images.Select(image => new ImageDto()
                 {
+                    Id = image.Id,
                     Filename = image.Filename,
                     Url = image.Url
                 }).ToList(),
